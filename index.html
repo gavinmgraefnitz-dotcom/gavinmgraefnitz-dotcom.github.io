@@ -2,97 +2,42 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>Resource Clicker with Tabs</title>
+    <title>Resource Clicker — Prestige + Master Tools + Factories</title>
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        background: #f4f4f4;
-        margin: 0;
-        padding: 20px;
-      }
-      h1 {
-        text-align: center;
-      }
-      .resource-box {
-        display: flex;
-        gap: 20px;
-        justify-content: center;
-        margin-bottom: 20px;
-        flex-wrap: wrap;
-      }
-      .resource {
-        background: #fff;
-        padding: 15px;
-        border-radius: 10px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-        text-align: center;
-        width: 150px;
-      }
-      #shop {
-        position: fixed;
-        right: 20px;
-        top: 20px;
-        width: 320px;
-        background: #fff;
-        border-radius: 10px;
-        padding: 15px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-        max-height: 90vh;
-        overflow-y: auto;
-      }
-      #shop h2 {
-        margin-top: 0;
-      }
-
-      /* Tabs */
-      .tabs {
-        display: flex;
-        gap: 5px;
-        margin-bottom: 10px;
-        flex-wrap: wrap;
-      }
-      .tab {
-        flex: 1;
-        padding: 6px;
-        text-align: center;
-        border-radius: 6px;
-        cursor: pointer;
-        background: #ddd;
-      }
-      .tab.active {
-        background: #4CAF50;
-        color: white;
-      }
-
-      /* Buttons */
-      button {
-        margin: 5px 0;
-        width: 100%;
-        padding: 8px;
-        border: none;
-        border-radius: 5px;
-        color: white;
-        cursor: pointer;
-        font-size: 14px;
-        transition: 0.2s;
-      }
-      button:disabled {
-        background: #888;
-        cursor: not-allowed;
-      }
-
-      /* THEMED SHOP BUTTONS */
-      .wood-btn { background: #8B5A2B; }
-      .stone-btn { background: #708090; }
-      .iron-btn { background: #a19d94; }
-      .gold-btn { background: #daa520; }
-      .diamond-btn { background: #00ced1; }
-      .unlock-btn { background: #4CAF50; }
-      button:hover:not(:disabled) { opacity: 0.85; }
+      body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; }
+      h1 { text-align:center; margin-bottom: 8px; }
+      .resource-box { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-bottom:18px; }
+      .resource { background:#fff; padding:12px; width:140px; text-align:center; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.12); }
+      button { padding:8px; border:none; border-radius:6px; cursor:pointer; margin:6px 0; width:100%; font-size:14px; }
+      button:disabled { background:#888; color:#ccc; cursor:not-allowed; }
+      #controls { text-align:center; margin-bottom:12px; }
+      #shop, #prestigeShop { position:fixed; right:20px; top:20px; width:360px; max-height:86vh; overflow:auto; background:#fff; border-radius:10px; padding:12px; box-shadow:0 4px 12px rgba(0,0,0,0.18); display:none; z-index:200; }
+      .tabs { display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap; }
+      .tab { flex:1; padding:6px; text-align:center; border-radius:6px; background:#ddd; cursor:pointer; user-select:none; }
+      .tab.active { background:#4caf50; color:#fff; }
+      .wood-btn { background:#8B5A2B; color:#fff; }
+      .stone-btn { background:#708090; color:#fff; }
+      .iron-btn { background:#a19d94; color:#000; }
+      .gold-btn { background:#daa520; color:#000; }
+      .diamond-btn { background:#00ced1; color:#000; }
+      .unlock-btn { background:#4CAF50; color:#fff; }
+      .master-btn { background:#8A2BE2; color:#fff; }
+      .factory-btn { background:#FF4500; color:#fff; }
+      .prestige-btn { background:#551A8B; color:#fff; }
+      .small { font-size:12px; padding:6px; }
+      .muted { color:#666; font-size:13px; }
+      .cost { font-weight:600; }
     </style>
   </head>
   <body>
     <h1>Resource Clicker</h1>
+
+    <div id="controls">
+      <button id="toggleShopBtn" class="small">Toggle Shop</button>
+      <button id="togglePrestigeBtn" class="small">Toggle Prestige Shop</button>
+      <button id="prestigeBtn" class="prestige-btn small">Prestige!</button>
+      <div class="muted">Prestige Points: <span id="ppCount">0</span></div>
+    </div>
 
     <div class="resource-box">
       <div class="resource">
@@ -122,9 +67,10 @@
       </div>
     </div>
 
+    <!-- Normal Shop -->
     <div id="shop">
       <h2>Shop</h2>
-      <div class="tabs">
+      <div class="tabs" id="shopTabs">
         <div class="tab active" data-tab="all">All</div>
         <div class="tab" data-tab="unlock">Unlocks</div>
         <div class="tab" data-tab="wood">Wood</div>
@@ -132,123 +78,299 @@
         <div class="tab" data-tab="iron">Iron</div>
         <div class="tab" data-tab="gold">Gold</div>
         <div class="tab" data-tab="diamond">Diamond</div>
+        <div class="tab" data-tab="factory">Factories</div>
       </div>
       <div id="upgradeList"></div>
     </div>
 
+    <!-- Prestige Shop (separate) -->
+    <div id="prestigeShop">
+      <h2>Prestige Shop</h2>
+      <div class="muted">Spend Prestige Points (PP). Gain PP by Prestiging: 1 PP per 10,000 Wood.</div>
+      <div id="prestigeUpgradeList" style="margin-top:10px;"></div>
+    </div>
+
     <script>
-      let resources = { wood: 0, stone: 0, iron: 0, gold: 0, diamond: 0 };
-      let clickPower = { wood: 1, stone: 1, iron: 1, gold: 1, diamond: 1 };
-      let autoPower = { wood: 0, stone: 0, iron: 0, gold: 0, diamond: 0 };
-      let unlocked = { wood: true, stone: false, iron: false, gold: false, diamond: false };
+    // --- Utilities ---
+    const clone = (o) => JSON.parse(JSON.stringify(o));
+    function capitalize(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+    function formatCost(cost){
+      return Object.entries(cost).map(([r,v]) => `${v} ${capitalize(r)}`).join(", ");
+    }
+    function canAfford(cost){
+      return Object.keys(cost).every(r => (resources[r] || 0) >= cost[r]);
+    }
 
-      let activeTab = "all";
+    // --- Game State ---
+    let resources = { wood:0, stone:0, iron:0, gold:0, diamond:0 };
+    const baseClickPower = { wood:1, stone:1, iron:1, gold:1, diamond:1 };
+    let clickPower = clone(baseClickPower);
+    let autoPower = { wood:0, stone:0, iron:0, gold:0, diamond:0 };
+    let unlocked = { wood:true, stone:false, iron:false, gold:false, diamond:false };
 
-      const upgrades = [
-        { name: "Pickaxe (Unlock Stone)", cost: { wood: 1000 }, unlock: "stone", oneTime: true, tab: "unlock" },
-        { name: "Iron Pickaxe (Unlock Iron)", cost: { stone: 5000 }, unlock: "iron", oneTime: true, tab: "unlock" },
-        { name: "Gold Pickaxe (Unlock Gold)", cost: { iron: 15000 }, unlock: "gold", oneTime: true, tab: "unlock" },
-        { name: "Diamond Pickaxe (Unlock Diamond)", cost: { gold: 50000 }, unlock: "diamond", oneTime: true, tab: "unlock" },
+    // persistent prestige state
+    let prestigePoints = 0;
+    let prestigeClickMultiplier = { wood:1, stone:1, iron:1, gold:1, diamond:1 }; // multiplies click power permanently
+    let prestigeFactoryUnlocked = { wood:false, stone:false, iron:false, gold:false, diamond:false }; // unlocks ability to buy factories in normal shop
 
-        { name: "Better Axe (+1 Wood/Click)", cost: { wood: 50 }, type: "click", resource: "wood", costMult: 1.5, tab: "wood" },
-        { name: "Stronger Pickaxe (+1 Stone/Click)", cost: { stone: 100 }, type: "click", resource: "stone", costMult: 1.5, tab: "stone" },
-        { name: "Iron Drill (+1 Iron/Click)", cost: { iron: 500 }, type: "click", resource: "iron", costMult: 1.5, tab: "iron" },
-        { name: "Gold Saw (+1 Gold/Click)", cost: { gold: 2000 }, type: "click", resource: "gold", costMult: 1.5, tab: "gold" },
-        { name: "Diamond Laser (+1 Diamond/Click)", cost: { diamond: 10000 }, type: "click", resource: "diamond", costMult: 1.5, tab: "diamond" },
+    // keep track of which upgrades have been shown at least once (so they persist visible)
+    let shownUpgrades = new Set();
 
-        { name: "Auto Lumberjack (+1 Wood/sec)", cost: { wood: 200 }, type: "auto", resource: "wood", costMult: 1.7, tab: "wood" },
-        { name: "Auto Miner (+1 Stone/sec)", cost: { stone: 500 }, type: "auto", resource: "stone", costMult: 1.7, tab: "stone" },
-        { name: "Auto Smelter (+1 Iron/sec)", cost: { iron: 1500 }, type: "auto", resource: "iron", costMult: 1.7, tab: "iron" },
-        { name: "Auto Excavator (+1 Gold/sec)", cost: { gold: 6000 }, type: "auto", resource: "gold", costMult: 1.7, tab: "gold" },
-        { name: "Quantum Drill (+1 Diamond/sec)", cost: { diamond: 25000 }, type: "auto", resource: "diamond", costMult: 1.7, tab: "diamond" }
-      ];
+    // --- Normal upgrades (available during a run) ---
+    // Each has a baseCost so we can reset costs when prestiging
+    let upgrades = [
+      // unlocks (one-time per run)
+      { id: "unlockStone", name:"Pickaxe (Unlock Stone)", cost:{wood:1000}, baseCost:null, unlock:"stone", oneTime:true, tab:"unlock", bought:false },
+      { id: "unlockIron", name:"Iron Pickaxe (Unlock Iron)", cost:{stone:5000}, baseCost:null, unlock:"iron", oneTime:true, tab:"unlock", condition:()=>unlocked.stone, bought:false },
+      { id: "unlockGold", name:"Gold Pickaxe (Unlock Gold)", cost:{iron:15000}, baseCost:null, unlock:"gold", oneTime:true, tab:"unlock", condition:()=>unlocked.iron, bought:false },
+      { id: "unlockDiamond", name:"Diamond Pickaxe (Unlock Diamond)", cost:{gold:50000}, baseCost:null, unlock:"diamond", oneTime:true, tab:"unlock", condition:()=>unlocked.gold, bought:false },
 
-      const upgradeList = document.getElementById("upgradeList");
+      // click upgrades (repeatable)
+      { id:"betterAxe", name:"Better Axe (+1 Wood/Click)", cost:{wood:50}, baseCost:null, type:"click", resource:"wood", costMult:1.5, tab:"wood" },
+      { id:"strongerPick", name:"Stronger Pickaxe (+1 Stone/Click)", cost:{stone:100}, baseCost:null, type:"click", resource:"stone", costMult:1.5, tab:"stone", condition:()=>unlocked.stone },
+      { id:"ironDrill", name:"Iron Drill (+1 Iron/Click)", cost:{iron:500}, baseCost:null, type:"click", resource:"iron", costMult:1.5, tab:"iron", condition:()=>unlocked.iron },
+      { id:"goldSaw", name:"Gold Saw (+1 Gold/Click)", cost:{gold:2000}, baseCost:null, type:"click", resource:"gold", costMult:1.5, tab:"gold", condition:()=>unlocked.gold },
+      { id:"diamondLaser", name:"Diamond Laser (+1 Diamond/Click)", cost:{diamond:10000}, baseCost:null, type:"click", resource:"diamond", costMult:1.5, tab:"diamond", condition:()=>unlocked.diamond },
 
-      function updateDisplay() {
-        document.getElementById("woodCount").textContent = resources.wood;
-        document.getElementById("stoneCount").textContent = resources.stone;
-        document.getElementById("ironCount").textContent = resources.iron;
-        document.getElementById("goldCount").textContent = resources.gold;
-        document.getElementById("diamondCount").textContent = resources.diamond;
-      }
+      // auto upgrades (repeatable)
+      { id:"autoLumberjack", name:"Auto Lumberjack (+1 Wood/sec)", cost:{wood:200}, baseCost:null, type:"auto", resource:"wood", costMult:1.7, tab:"wood" },
+      { id:"autoMiner", name:"Auto Miner (+1 Stone/sec)", cost:{stone:500}, baseCost:null, type:"auto", resource:"stone", costMult:1.7, tab:"stone", condition:()=>unlocked.stone },
+      { id:"autoSmelter", name:"Auto Smelter (+1 Iron/sec)", cost:{iron:1500}, baseCost:null, type:"auto", resource:"iron", costMult:1.7, tab:"iron", condition:()=>unlocked.iron },
+      { id:"autoExcavator", name:"Auto Excavator (+1 Gold/sec)", cost:{gold:6000}, baseCost:null, type:"auto", resource:"gold", costMult:1.7, tab:"gold", condition:()=>unlocked.gold },
+      { id:"quantumDrill", name:"Quantum Drill (+1 Diamond/sec)", cost:{diamond:25000}, baseCost:null, type:"auto", resource:"diamond", costMult:1.7, tab:"diamond", condition:()=>unlocked.diamond },
 
-      function renderShop() {
-        upgradeList.innerHTML = "";
-        upgrades.forEach((u, i) => {
-          if (activeTab !== "all" && u.tab !== activeTab) return;
-          if (u.resource && !unlocked[u.resource]) return;
-          if (u.unlock && unlocked[u.unlock]) return;
+      // factories (repeatable) — these only show if prestigeFactoryUnlocked[resource] is true OR resource unlocked in current run
+      { id:"lumberMill", name:"Lumber Mill (+10 Wood/sec)", cost:{wood:5000, iron:500}, baseCost:null, type:"factory", resource:"wood", gain:10, costMult:1.8, tab:"factory" },
+      { id:"stoneQuarry", name:"Stone Quarry (+10 Stone/sec)", cost:{stone:10000, iron:1000}, baseCost:null, type:"factory", resource:"stone", gain:10, costMult:1.8, tab:"factory" },
+      { id:"ironForge", name:"Iron Forge (+10 Iron/sec)", cost:{iron:20000, gold:2500}, baseCost:null, type:"factory", resource:"iron", gain:10, costMult:1.8, tab:"factory" },
+      { id:"goldMine", name:"Gold Mine (+10 Gold/sec)", cost:{gold:50000, diamond:5000}, baseCost:null, type:"factory", resource:"gold", gain:10, costMult:1.8, tab:"factory" },
+      { id:"diamondLab", name:"Diamond Lab (+10 Diamond/sec)", cost:{diamond:100000, gold:20000}, baseCost:null, type:"factory", resource:"diamond", gain:10, costMult:1.8, tab:"factory" }
+    ];
 
-          const btn = document.createElement("button");
-          btn.textContent = `${u.name} (Cost: ${JSON.stringify(u.cost)})`;
-          btn.disabled = !canAfford(u.cost);
+    // keep a clean snapshot of baseCost so we can reset on prestige
+    upgrades.forEach(u => { u.baseCost = clone(u.cost); if (u.oneTime) u.bought = false; });
 
-          if (u.unlock) btn.classList.add("unlock-btn");
-          else if (u.resource) btn.classList.add(u.resource + "-btn");
+    // --- Prestige Upgrades (bought with PP, permanent) ---
+    const prestigeUpgrades = [
+      // Master Tools (permanent one-time prestige upgrades)
+      { id:"p_masterAxe", name:"Master Axe (+100% Wood Click Power)", cost:5, type:"master", resource:"wood", bought:false },
+      { id:"p_masterPick", name:"Master Pickaxe (+100% Stone Click Power)", cost:10, type:"master", resource:"stone", bought:false },
+      { id:"p_masterDrill", name:"Master Drill (+100% Iron Click Power)", cost:20, type:"master", resource:"iron", bought:false },
+      { id:"p_masterSaw", name:"Master Saw (+100% Gold Click Power)", cost:30, type:"master", resource:"gold", bought:false },
+      { id:"p_masterLaser", name:"Master Laser (+100% Diamond Click Power)", cost:50, type:"master", resource:"diamond", bought:false },
 
-          btn.addEventListener("click", () => buyUpgrade(i));
-          upgradeList.appendChild(btn);
-        });
-      }
+      // Factory unlocks (permanent prestige unlocks)
+      { id:"p_unlockWoodFactory", name:"Unlock Wood Factories", cost:3, type:"factoryUnlock", resource:"wood", bought:false },
+      { id:"p_unlockStoneFactory", name:"Unlock Stone Factories", cost:6, type:"factoryUnlock", resource:"stone", bought:false },
+      { id:"p_unlockIronFactory", name:"Unlock Iron Factories", cost:12, type:"factoryUnlock", resource:"iron", bought:false },
+      { id:"p_unlockGoldFactory", name:"Unlock Gold Factories", cost:25, type:"factoryUnlock", resource:"gold", bought:false },
+      { id:"p_unlockDiamondFactory", name:"Unlock Diamond Factories", cost:40, type:"factoryUnlock", resource:"diamond", bought:false }
+    ];
 
-      function canAfford(cost) {
-        return Object.keys(cost).every(r => resources[r] >= cost[r]);
-      }
+    // --- DOM refs ---
+    const upgradeList = document.getElementById("upgradeList");
+    const prestigeUpgradeList = document.getElementById("prestigeUpgradeList");
+    const ppCountEl = document.getElementById("ppCount");
 
-      function buyUpgrade(i) {
-        const u = upgrades[i];
-        if (!canAfford(u.cost)) return;
-        for (let r in u.cost) resources[r] -= u.cost[r];
+    // --- Controls / toggles ---
+    document.getElementById("toggleShopBtn").addEventListener("click", toggleShop);
+    document.getElementById("togglePrestigeBtn").addEventListener("click", togglePrestigeShop);
+    document.getElementById("prestigeBtn").addEventListener("click", prestige);
 
-        if (u.unlock) {
-          unlocked[u.unlock] = true;
-          document.getElementById("gather" + capitalize(u.unlock)).disabled = false;
-          if (u.oneTime) upgrades.splice(i, 1);
-        }
+    // resource buttons
+    document.getElementById("gatherWood").addEventListener("click", ()=>{ resources.wood += clickPower.wood; updateDisplay(); });
+    document.getElementById("gatherStone").addEventListener("click", ()=>{ resources.stone += clickPower.stone; updateDisplay(); });
+    document.getElementById("gatherIron").addEventListener("click", ()=>{ resources.iron += clickPower.iron; updateDisplay(); });
+    document.getElementById("gatherGold").addEventListener("click", ()=>{ resources.gold += clickPower.gold; updateDisplay(); });
+    document.getElementById("gatherDiamond").addEventListener("click", ()=>{ resources.diamond += clickPower.diamond; updateDisplay(); });
 
-        if (u.type === "click") {
-          clickPower[u.resource] += 1;
-          for (let r in u.cost) u.cost[r] = Math.floor(u.cost[r] * u.costMult);
-        }
-
-        if (u.type === "auto") {
-          autoPower[u.resource] += 1;
-          for (let r in u.cost) u.cost[r] = Math.floor(u.cost[r] * u.costMult);
-        }
-
-        updateDisplay();
+    // tab switching
+    document.querySelectorAll(".tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+        tab.classList.add("active");
+        activeTab = tab.dataset.tab;
         renderShop();
-      }
-
-      // Resource clicks
-      document.getElementById("gatherWood").onclick = () => { resources.wood += clickPower.wood; updateDisplay(); renderShop(); };
-      document.getElementById("gatherStone").onclick = () => { resources.stone += clickPower.stone; updateDisplay(); renderShop(); };
-      document.getElementById("gatherIron").onclick = () => { resources.iron += clickPower.iron; updateDisplay(); renderShop(); };
-      document.getElementById("gatherGold").onclick = () => { resources.gold += clickPower.gold; updateDisplay(); renderShop(); };
-      document.getElementById("gatherDiamond").onclick = () => { resources.diamond += clickPower.diamond; updateDisplay(); renderShop(); };
-
-      // Auto collect
-      setInterval(() => {
-        for (let r in autoPower) resources[r] += autoPower[r];
-        updateDisplay();
-        renderShop();
-      }, 1000);
-
-      function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
-
-      // Tab switching
-      document.querySelectorAll(".tab").forEach(tab => {
-        tab.addEventListener("click", () => {
-          document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-          tab.classList.add("active");
-          activeTab = tab.dataset.tab;
-          renderShop();
-        });
       });
+    });
+
+    // initial state: shops hidden
+    document.getElementById("shop").style.display = "none";
+    document.getElementById("prestigeShop").style.display = "none";
+    let activeTab = "all";
+
+    // --- Rendering functions ---
+    function updateDisplay(){
+      document.getElementById("woodCount").textContent = resources.wood;
+      document.getElementById("stoneCount").textContent = resources.stone;
+      document.getElementById("ironCount").textContent = resources.iron;
+      document.getElementById("goldCount").textContent = resources.gold;
+      document.getElementById("diamondCount").textContent = resources.diamond;
+      ppCountEl.textContent = prestigePoints;
+      // enable/disable gather buttons per unlocked flags
+      document.getElementById("gatherStone").disabled = !unlocked.stone;
+      document.getElementById("gatherIron").disabled = !unlocked.iron;
+      document.getElementById("gatherGold").disabled = !unlocked.gold;
+      document.getElementById("gatherDiamond").disabled = !unlocked.diamond;
+      renderShop();
+      renderPrestigeShop();
+    }
+
+    function renderShop(){
+      upgradeList.innerHTML = "";
+      upgrades.forEach((u,i) => {
+        // filter by tab
+        if (activeTab !== "all" && u.tab !== activeTab) return;
+
+        // For unlock items: show only if not bought in current run
+        if (u.unlock) {
+          if (u.bought) return; // already bought this run
+          // If it has a condition (e.g. requires previous resource unlocked), enforce
+          if (u.condition && !u.condition()) return;
+          // show unlock button (always visible when condition ok)
+          shownUpgrades.add(u.id);
+        } else if (u.type === "factory") {
+          // factories require a prestige unlock OR resource unlocked OR shown before
+          const showCondition = prestigeFactoryUnlocked[u.resource] || unlocked[u.resource] || shownUpgrades.has(u.id);
+          if (!showCondition) return;
+        } else {
+          // click/auto: show if resource unlocked OR already shown before
+          const showCondition = unlocked[u.resource] || shownUpgrades.has(u.id);
+          if (!showCondition) return;
+        }
+
+        // now we show it and make sure it's remembered as shown
+        shownUpgrades.add(u.id);
+
+        // create the button
+        const btn = document.createElement("button");
+        btn.textContent = `${u.name} (Cost: ${formatCost(u.cost)})`;
+        // style classes
+        if (u.unlock) btn.classList.add("unlock-btn");
+        else if (u.type === "factory") btn.classList.add("factory-btn");
+        else if (u.resource) {
+          btn.classList.add(u.resource + "-btn");
+        }
+
+        btn.disabled = !canAfford(u.cost);
+        btn.addEventListener("click", () => buyUpgrade(i));
+        upgradeList.appendChild(btn);
+      });
+    }
+
+    function renderPrestigeShop(){
+      prestigeUpgradeList.innerHTML = "";
+      prestigeUpgrades.forEach((u,i) => {
+        if (u.bought) return; // already purchased permanently
+        const btn = document.createElement("button");
+        btn.textContent = `${u.name} (Cost: ${u.cost} PP)`;
+        btn.classList.add("prestige-btn");
+        btn.disabled = prestigePoints < u.cost;
+        btn.addEventListener("click", ()=> buyPrestigeUpgrade(i));
+        prestigeUpgradeList.appendChild(btn);
+      });
+    }
+
+    // --- Buying functions ---
+    function buyUpgrade(index){
+      const u = upgrades[index];
+      if (!canAfford(u.cost)) return;
+      // pay costs
+      for (let r in u.cost) resources[r] -= u.cost[r];
+
+      // effect by type
+      if (u.unlock) {
+        unlocked[u.unlock] = true;
+        u.bought = true; // one-time this run
+        // enable gather button
+        const btn = document.getElementById("gather" + capitalize(u.unlock));
+        if (btn) btn.disabled = false;
+      }
+
+      if (u.type === "click") {
+        clickPower[u.resource] += 1;
+        if (u.costMult) for (let r in u.cost) u.cost[r] = Math.floor(u.cost[r] * u.costMult);
+      }
+
+      if (u.type === "auto") {
+        autoPower[u.resource] += 1;
+        if (u.costMult) for (let r in u.cost) u.cost[r] = Math.floor(u.cost[r] * u.costMult);
+      }
+
+      if (u.type === "factory") {
+        autoPower[u.resource] += u.gain;
+        if (u.costMult) for (let r in u.cost) u.cost[r] = Math.floor(u.cost[r] * u.costMult);
+      }
 
       updateDisplay();
-      renderShop();
+    }
+
+    function buyPrestigeUpgrade(index){
+      const u = prestigeUpgrades[index];
+      if (prestigePoints < u.cost) return;
+      prestigePoints -= u.cost;
+      u.bought = true;
+
+      if (u.type === "master") {
+        // permanently increase the prestige multiplier for that resource
+        prestigeClickMultiplier[u.resource] *= 2;
+        // apply immediately to current click power
+        clickPower[u.resource] *= 2;
+      }
+      if (u.type === "factoryUnlock") {
+        prestigeFactoryUnlocked[u.resource] = true;
+      }
+
+      updateDisplay();
+    }
+
+    // --- Prestige (reset run, keep prestige purchases/unlocks) ---
+    function prestige(){
+      const gained = Math.floor(resources.wood / 10000);
+      if (gained <= 0) return alert("You need at least 10,000 Wood to gain 1 Prestige Point.");
+      if (!confirm(`Prestige now and gain ${gained} Prestige Point(s)? Your run will reset.`)) return;
+
+      prestigePoints += gained;
+
+      // Reset run state (resources, temp upgrades, auto values, unlocked resources)
+      resources = { wood:0, stone:0, iron:0, gold:0, diamond:0 };
+      // reset clickPower to base then apply permanent prestige multipliers
+      clickPower = clone(baseClickPower);
+      for (let r in clickPower) clickPower[r] = Math.floor(clickPower[r] * (prestigeClickMultiplier[r] || 1));
+      // reset auto power (no permanent auto from prestige unless we implement)
+      autoPower = { wood:0, stone:0, iron:0, gold:0, diamond:0 };
+      // resource unlocks reset (you must re-buy pickaxes in the new run)
+      unlocked = { wood:true, stone:false, iron:false, gold:false, diamond:false };
+
+      // reset normal upgrades to base cost and bought flags so they're fresh next run
+      upgrades.forEach(u => {
+        if (u.baseCost) u.cost = clone(u.baseCost);
+        if (u.oneTime) u.bought = false;
+      });
+
+      // shownUpgrades: keep it so players keep seen items visible in the shop (you asked that once they appear they stay)
+      // BUT if you want shownUpgrades cleared on prestige, you can clear it here.
+      // shownUpgrades.clear();
+
+      updateDisplay();
+      renderPrestigeShop();
+      alert(`Prestiged! You earned ${gained} Prestige Point(s).`);
+    }
+
+    // --- Auto collection ---
+    setInterval(()=>{
+      for (let r in autoPower) resources[r] += autoPower[r];
+      updateDisplay();
+    }, 1000);
+
+    // UI toggles
+    function toggleShop(){ const s = document.getElementById("shop"); s.style.display = (s.style.display === "none" || s.style.display === "") ? "block" : "none"; }
+    function togglePrestigeShop(){ const s = document.getElementById("prestigeShop"); s.style.display = (s.style.display === "none" || s.style.display === "") ? "block" : "none"; }
+
+    // initial render
+    updateDisplay();
+    renderShop();
+    renderPrestigeShop();
     </script>
   </body>
 </html>
