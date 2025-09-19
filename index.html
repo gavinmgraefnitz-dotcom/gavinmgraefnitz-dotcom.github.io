@@ -1,219 +1,254 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <title>Clicker Game</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      margin: 0;
-      padding: 20px;
-    }
-    h1, h2 {
-      text-align: center;
-    }
-    #resources {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    #resources p {
-      margin: 5px 0;
-    }
-    #buttons {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    #buttons button {
-      margin: 5px;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    #shop {
-      position: fixed;
-      right: 20px;
-      top: 20px;
-      width: 250px;
-      background: #fff;
-      border: 2px solid #333;
-      border-radius: 10px;
-      padding: 15px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
-    }
-    #shop h2 {
-      margin-top: 0;
-    }
-    #shop button {
-      display: block;
-      margin: 8px 0;
-      width: 100%;
-      padding: 8px;
-    }
-    button:disabled {
-      background-color: #888;
-      color: #ccc;
-      cursor: not-allowed;
-    }
-    .ad-banner {
-      margin-top: 15px;
-      text-align: center;
-    }
-  </style>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8">
+    <title>Resource Clicker with Tabs</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f4f4f4;
+        margin: 0;
+        padding: 20px;
+      }
+      h1 {
+        text-align: center;
+      }
+      .resource-box {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+      .resource {
+        background: #fff;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        text-align: center;
+        width: 150px;
+      }
+      #shop {
+        position: fixed;
+        right: 20px;
+        top: 20px;
+        width: 320px;
+        background: #fff;
+        border-radius: 10px;
+        padding: 15px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+      #shop h2 {
+        margin-top: 0;
+      }
 
-  <h1>Clicker Game</h1>
+      /* Tabs */
+      .tabs {
+        display: flex;
+        gap: 5px;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+      }
+      .tab {
+        flex: 1;
+        padding: 6px;
+        text-align: center;
+        border-radius: 6px;
+        cursor: pointer;
+        background: #ddd;
+      }
+      .tab.active {
+        background: #4CAF50;
+        color: white;
+      }
 
-  <div id="resources">
-    <p id="wood">Wood: 0</p>
-    <p id="stone">Stone: 0</p>
-  </div>
+      /* Buttons */
+      button {
+        margin: 5px 0;
+        width: 100%;
+        padding: 8px;
+        border: none;
+        border-radius: 5px;
+        color: white;
+        cursor: pointer;
+        font-size: 14px;
+        transition: 0.2s;
+      }
+      button:disabled {
+        background: #888;
+        cursor: not-allowed;
+      }
 
-  <div id="buttons">
-    <button id="chopWood">Chop Wood</button>
-    <button id="mineStone" style="display:none;">Mine Stone</button>
-  </div>
+      /* THEMED SHOP BUTTONS */
+      .wood-btn { background: #8B5A2B; }
+      .stone-btn { background: #708090; }
+      .iron-btn { background: #a19d94; }
+      .gold-btn { background: #daa520; }
+      .diamond-btn { background: #00ced1; }
+      .unlock-btn { background: #4CAF50; }
+      button:hover:not(:disabled) { opacity: 0.85; }
+    </style>
+  </head>
+  <body>
+    <h1>Resource Clicker</h1>
 
-  <div id="shop">
-    <h2>Shop</h2>
-    <div id="shopItems"></div>
-
-    <!-- Google AdSense Banner -->
-    <div class="ad-banner">
-      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3316533323916018"
-       crossorigin="anonymous"></script>
-      <!-- ClickerGameBanner -->
-      <ins class="adsbygoogle"
-           style="display:block"
-           data-ad-client="ca-pub-3316533323916018"
-           data-ad-slot="1234567890"
-           data-ad-format="auto"
-           data-full-width-responsive="true"></ins>
-      <script>
-           (adsbygoogle = window.adsbygoogle || []).push({});
-      </script>
+    <div class="resource-box">
+      <div class="resource">
+        <h3>Wood</h3>
+        <p id="woodCount">0</p>
+        <button id="gatherWood">Chop Wood</button>
+      </div>
+      <div class="resource">
+        <h3>Stone</h3>
+        <p id="stoneCount">0</p>
+        <button id="gatherStone" disabled>Mine Stone</button>
+      </div>
+      <div class="resource">
+        <h3>Iron</h3>
+        <p id="ironCount">0</p>
+        <button id="gatherIron" disabled>Mine Iron</button>
+      </div>
+      <div class="resource">
+        <h3>Gold</h3>
+        <p id="goldCount">0</p>
+        <button id="gatherGold" disabled>Mine Gold</button>
+      </div>
+      <div class="resource">
+        <h3>Diamond</h3>
+        <p id="diamondCount">0</p>
+        <button id="gatherDiamond" disabled>Mine Diamond</button>
+      </div>
     </div>
-  </div>
 
-<script>
-  // Resources
-  let wood = 0;
-  let stone = 0;
+    <div id="shop">
+      <h2>Shop</h2>
+      <div class="tabs">
+        <div class="tab active" data-tab="all">All</div>
+        <div class="tab" data-tab="unlock">Unlocks</div>
+        <div class="tab" data-tab="wood">Wood</div>
+        <div class="tab" data-tab="stone">Stone</div>
+        <div class="tab" data-tab="iron">Iron</div>
+        <div class="tab" data-tab="gold">Gold</div>
+        <div class="tab" data-tab="diamond">Diamond</div>
+      </div>
+      <div id="upgradeList"></div>
+    </div>
 
-  // Resource per click
-  let woodPerClick = 1;
-  let stonePerClick = 1;
+    <script>
+      let resources = { wood: 0, stone: 0, iron: 0, gold: 0, diamond: 0 };
+      let clickPower = { wood: 1, stone: 1, iron: 1, gold: 1, diamond: 1 };
+      let autoPower = { wood: 0, stone: 0, iron: 0, gold: 0, diamond: 0 };
+      let unlocked = { wood: true, stone: false, iron: false, gold: false, diamond: false };
 
-  // Track unlocked upgrades
-  const unlockedUpgrades = new Set();
+      let activeTab = "all";
 
-  const woodDisplay = document.getElementById("wood");
-  const stoneDisplay = document.getElementById("stone");
-  const chopWoodBtn = document.getElementById("chopWood");
-  const mineStoneBtn = document.getElementById("mineStone");
-  const shopItemsDiv = document.getElementById("shopItems");
+      const upgrades = [
+        { name: "Pickaxe (Unlock Stone)", cost: { wood: 1000 }, unlock: "stone", oneTime: true, tab: "unlock" },
+        { name: "Iron Pickaxe (Unlock Iron)", cost: { stone: 5000 }, unlock: "iron", oneTime: true, tab: "unlock" },
+        { name: "Gold Pickaxe (Unlock Gold)", cost: { iron: 15000 }, unlock: "gold", oneTime: true, tab: "unlock" },
+        { name: "Diamond Pickaxe (Unlock Diamond)", cost: { gold: 50000 }, unlock: "diamond", oneTime: true, tab: "unlock" },
 
-  // Resource buttons
-  chopWoodBtn.addEventListener("click", () => {
-    wood += woodPerClick;
-    updateDisplay();
-  });
+        { name: "Better Axe (+1 Wood/Click)", cost: { wood: 50 }, type: "click", resource: "wood", costMult: 1.5, tab: "wood" },
+        { name: "Stronger Pickaxe (+1 Stone/Click)", cost: { stone: 100 }, type: "click", resource: "stone", costMult: 1.5, tab: "stone" },
+        { name: "Iron Drill (+1 Iron/Click)", cost: { iron: 500 }, type: "click", resource: "iron", costMult: 1.5, tab: "iron" },
+        { name: "Gold Saw (+1 Gold/Click)", cost: { gold: 2000 }, type: "click", resource: "gold", costMult: 1.5, tab: "gold" },
+        { name: "Diamond Laser (+1 Diamond/Click)", cost: { diamond: 10000 }, type: "click", resource: "diamond", costMult: 1.5, tab: "diamond" },
 
-  mineStoneBtn.addEventListener("click", () => {
-    stone += stonePerClick;
-    updateDisplay();
-  });
+        { name: "Auto Lumberjack (+1 Wood/sec)", cost: { wood: 200 }, type: "auto", resource: "wood", costMult: 1.7, tab: "wood" },
+        { name: "Auto Miner (+1 Stone/sec)", cost: { stone: 500 }, type: "auto", resource: "stone", costMult: 1.7, tab: "stone" },
+        { name: "Auto Smelter (+1 Iron/sec)", cost: { iron: 1500 }, type: "auto", resource: "iron", costMult: 1.7, tab: "iron" },
+        { name: "Auto Excavator (+1 Gold/sec)", cost: { gold: 6000 }, type: "auto", resource: "gold", costMult: 1.7, tab: "gold" },
+        { name: "Quantum Drill (+1 Diamond/sec)", cost: { diamond: 25000 }, type: "auto", resource: "diamond", costMult: 1.7, tab: "diamond" }
+      ];
 
-  // Upgrades
-  const upgrades = [
-    {
-      id: "pickaxe",
-      name: "Pickaxe (Unlock Stone Mining)",
-      cost: { wood: 1000, stone: 0 },
-      effect: () => {
-        mineStoneBtn.style.display = "inline-block";
-      }
-    },
-    {
-      id: "sharpAxe",
-      name: "Sharper Axe (+1 Wood per Click)",
-      cost: { wood: 50, stone: 0 },
-      effect: () => {
-        woodPerClick += 1;
-      }
-    },
-    {
-      id: "strongPick",
-      name: "Stronger Pick (+1 Stone per Click)",
-      cost: { wood: 0, stone: 50 },
-      effect: () => {
-        stonePerClick += 1;
-      }
-    },
-    {
-      id: "lumberMill",
-      name: "Lumber Mill (+5 Wood per Click)",
-      cost: { wood: 500, stone: 200 },
-      effect: () => {
-        woodPerClick += 5;
-      },
-      requires: "pickaxe"
-    },
-    {
-      id: "quarry",
-      name: "Quarry (+5 Stone per Click)",
-      cost: { wood: 300, stone: 600 },
-      effect: () => {
-        stonePerClick += 5;
-      },
-      requires: "pickaxe"
-    }
-  ];
+      const upgradeList = document.getElementById("upgradeList");
 
-  // Display upgrades
-  function renderShop() {
-    shopItemsDiv.innerHTML = "";
-    upgrades.forEach(upgrade => {
-      if (unlockedUpgrades.has(upgrade.id)) {
-        return;
+      function updateDisplay() {
+        document.getElementById("woodCount").textContent = resources.wood;
+        document.getElementById("stoneCount").textContent = resources.stone;
+        document.getElementById("ironCount").textContent = resources.iron;
+        document.getElementById("goldCount").textContent = resources.gold;
+        document.getElementById("diamondCount").textContent = resources.diamond;
       }
 
-      if (upgrade.requires && !unlockedUpgrades.has(upgrade.requires)) {
-        return;
-      }
+      function renderShop() {
+        upgradeList.innerHTML = "";
+        upgrades.forEach((u, i) => {
+          if (activeTab !== "all" && u.tab !== activeTab) return;
+          if (u.resource && !unlocked[u.resource]) return;
+          if (u.unlock && unlocked[u.unlock]) return;
 
-      if (upgrade.cost.wood > wood * 10 || upgrade.cost.stone > stone * 10) {
-        return;
-      }
+          const btn = document.createElement("button");
+          btn.textContent = `${u.name} (Cost: ${JSON.stringify(u.cost)})`;
+          btn.disabled = !canAfford(u.cost);
 
-      const btn = document.createElement("button");
-      btn.textContent = `${upgrade.name} (Cost: ${upgrade.cost.wood} wood, ${upgrade.cost.stone} stone)`;
+          if (u.unlock) btn.classList.add("unlock-btn");
+          else if (u.resource) btn.classList.add(u.resource + "-btn");
 
-      if (wood >= upgrade.cost.wood && stone >= upgrade.cost.stone) {
-        btn.disabled = false;
-        btn.addEventListener("click", () => {
-          wood -= upgrade.cost.wood;
-          stone -= upgrade.cost.stone;
-          unlockedUpgrades.add(upgrade.id);
-          upgrade.effect();
-          updateDisplay();
+          btn.addEventListener("click", () => buyUpgrade(i));
+          upgradeList.appendChild(btn);
         });
-      } else {
-        btn.disabled = true;
       }
 
-      shopItemsDiv.appendChild(btn);
-    });
-  }
+      function canAfford(cost) {
+        return Object.keys(cost).every(r => resources[r] >= cost[r]);
+      }
 
-  function updateDisplay() {
-    woodDisplay.textContent = "Wood: " + wood;
-    stoneDisplay.textContent = "Stone: " + stone;
-    renderShop();
-  }
+      function buyUpgrade(i) {
+        const u = upgrades[i];
+        if (!canAfford(u.cost)) return;
+        for (let r in u.cost) resources[r] -= u.cost[r];
 
-  updateDisplay();
-</script>
-</body>
+        if (u.unlock) {
+          unlocked[u.unlock] = true;
+          document.getElementById("gather" + capitalize(u.unlock)).disabled = false;
+          if (u.oneTime) upgrades.splice(i, 1);
+        }
+
+        if (u.type === "click") {
+          clickPower[u.resource] += 1;
+          for (let r in u.cost) u.cost[r] = Math.floor(u.cost[r] * u.costMult);
+        }
+
+        if (u.type === "auto") {
+          autoPower[u.resource] += 1;
+          for (let r in u.cost) u.cost[r] = Math.floor(u.cost[r] * u.costMult);
+        }
+
+        updateDisplay();
+        renderShop();
+      }
+
+      // Resource clicks
+      document.getElementById("gatherWood").onclick = () => { resources.wood += clickPower.wood; updateDisplay(); renderShop(); };
+      document.getElementById("gatherStone").onclick = () => { resources.stone += clickPower.stone; updateDisplay(); renderShop(); };
+      document.getElementById("gatherIron").onclick = () => { resources.iron += clickPower.iron; updateDisplay(); renderShop(); };
+      document.getElementById("gatherGold").onclick = () => { resources.gold += clickPower.gold; updateDisplay(); renderShop(); };
+      document.getElementById("gatherDiamond").onclick = () => { resources.diamond += clickPower.diamond; updateDisplay(); renderShop(); };
+
+      // Auto collect
+      setInterval(() => {
+        for (let r in autoPower) resources[r] += autoPower[r];
+        updateDisplay();
+        renderShop();
+      }, 1000);
+
+      function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+      // Tab switching
+      document.querySelectorAll(".tab").forEach(tab => {
+        tab.addEventListener("click", () => {
+          document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+          tab.classList.add("active");
+          activeTab = tab.dataset.tab;
+          renderShop();
+        });
+      });
+
+      updateDisplay();
+      renderShop();
+    </script>
+  </body>
 </html>
